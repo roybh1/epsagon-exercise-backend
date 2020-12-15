@@ -9,11 +9,28 @@ api = Api(app)
 class Span(Resource):
     def get(self):
         filters = []
-        args = dict(request.args)
-        for key in args:
-            arg = json.loads(args[key])
-            filters.append((key, arg[0], arg[1], arg[2]))
-        return get_span_by_filters(*filters)
+        if request.args is None:
+            return get_span_by_filters()
+        else:
+            args = dict(request.args)
+            for key in args:
+                arg = json.loads(args[key])
+                print(arg)
+                new_key = []
+                for i in arg:
+                    print(i)
+                    print(type(i))
+                    if key not in ["spanId", "parentSpanId"]:
+                        try:
+                            if "." in i:
+                                i = float(i)
+                            else:
+                                i = int(i)
+                        except:
+                            pass
+                    new_key.append(i)
+                filters.append((key, new_key[0], new_key[1], new_key[2]))
+            return get_span_by_filters(*filters)
 
 api.add_resource(Span, '/spans')
 

@@ -8,6 +8,7 @@ except Exception as e:
 
 end_time_column = spans.apply(lambda row: row.startTime + row.duration, axis=1)
 spans = spans.assign(endTime=end_time_column.values)
+spans["spanId"] = spans["spanId"].astype(str)
 
 operations = {
     "eq": "==",
@@ -40,7 +41,13 @@ def _get_span_by_filters(*filters):
         if filt.is_tag:
             return spans[spans['tags'].apply(lambda x: query_tag(x, filt.attr, filt.value, filt.operation))]
         else:
-            return spans.query("{} {} {}".format(filt.attr, operations[filt.operation], filt.value))
+            if type(filt.value) == str:
+                filt.value = '"{}"'.format(filt.value)
+            query = '{} {} {}'.format(filt.attr, operations[filt.operation], filt.value)
+            print("QUERY: {}".format(query))
+            return spans.query(query)
+
+    return spans
 
 def query_tag(tag, attr, value, operation):
     """
