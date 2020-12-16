@@ -6,6 +6,20 @@ app = Flask(__name__)
 
 api = Api(app)
 
+def create_new_key(arg, key):
+    new_key = []
+    for i in arg:
+        if key not in ["spanId", "parentSpanId"]:
+            try:
+                if "." in i:
+                    i = float(i)
+                else:
+                    i = int(i)
+            except:
+                pass
+        new_key.append(i)
+    return new_key
+
 class Span(Resource):
     def get(self):
         filters = []
@@ -15,20 +29,7 @@ class Span(Resource):
             args = dict(request.args)
             for key in args:
                 arg = json.loads(args[key])
-                print(arg)
-                new_key = []
-                for i in arg:
-                    print(i)
-                    print(type(i))
-                    if key not in ["spanId", "parentSpanId"]:
-                        try:
-                            if "." in i:
-                                i = float(i)
-                            else:
-                                i = int(i)
-                        except:
-                            pass
-                    new_key.append(i)
+                new_key = create_new_key(arg, key)
                 filters.append((key, new_key[0], new_key[1], new_key[2]))
             return get_span_by_filters(*filters)
 
